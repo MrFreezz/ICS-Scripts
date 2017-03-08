@@ -28,7 +28,7 @@ ShowProperties();
 
 try
 {
-	OutputLabel.text = MacroName + " - TEC10-17" + propCycTECCycles + " from: " + propCycTECLoSP + " to: " + propCycTECHiSP;
+  OutputLabel.text = MacroName + " - TEC10-17" + propCycTECCycles + " from: " + propCycTECLoSP + " to: " + propCycTECHiSP;
   //Delete any output files if they exist
   outDeleteOutputFile("VolpiOutputTEC1Ch1.txt");
   outDeleteOutputFile("VolpiOutputTEC1Ch3.txt");
@@ -50,135 +50,138 @@ try
   //create Baseline arrays
   var ArrOpticsCh1BaseLine = new Array(0,0,0,0,0,0,0,0);
   var ArrOpticsCh3BaseLine = new Array(0,0,0,0,0,0,0,0);
-
+  //create array of booleans to determine if TEC is on or off
+  var ArrTECisOn = new Array(1,1,1,1,1,1,1,1);
+  
   // Move Robot to first well
   rbtMoveBothAbsolute(8910,115,0);
   //Enzyme Activation
   TECtoTarget(propCycTECHiSP, propCycTECHiRR);
   //Hold for 3 minutes
   TECDwell(180);  
-	// Run the cycles
-	for( cycle=1; cycle<=propCycTECCycles; cycle++ )
-	{
-		Debug( "TEC10-17 cycle " + cycle + " of " + propCycTECCycles );
+  // Run the cycles
+  for( cycle=1; cycle<=propCycTECCycles; cycle++ )
+  {
+    Debug( "TEC10-17 cycle " + cycle + " of " + propCycTECCycles );
 	
-		// Get TEC to Hi
-		OutputLabel.text = "Cycle: " + cycle + " of " + propCycTECCycles + " TEC10-17 to " + propCycTECHiSP;
-		TECtoTarget( propCycTECHiSP, propCycTECHiRR );
+    // Get TEC to Hi
+    OutputLabel.text = "Cycle: " + cycle + " of " + propCycTECCycles + " TEC10-17 to " + propCycTECHiSP;
+    TECtoTarget( propCycTECHiSP, propCycTECHiRR );
 
-		// Dwell TEC at high
-		OutputLabel.text = "Cycle: " + cycle + " of " + propCycTECCycles + " TEC10-17 dwell " + propCycTECHiDW;
-		TECDwell( propCycTECHiDW );
+    // Dwell TEC at high
+    OutputLabel.text = "Cycle: " + cycle + " of " + propCycTECCycles + " TEC10-17 dwell " + propCycTECHiDW;
+    TECDwell( propCycTECHiDW );
 
-		// Get TEC to Low
-		OutputLabel.text = "Cycle: " + cycle + " of " + propCycTECCycles + " TEC10-17 to " + propCycTECLoSP;
-		TECtoTarget( propCycTECLoSP, propCycTECLoRR );
-		// Dwell TEC at low
-		OutputLabel.text = "Cycle: " + cycle + " of " + propCycTECCycles + " TEC10-17 dwell " + propCycTECLoDW;
-		TECDwell( propCycTECLoDW );
-   for(TecNum = 0;TecNum<8;TecNum++)
-   {
-     //Check robot position
-	   CheckRobotPosition(TecNum);
-     //Take an optics reading
-     if(optMeasure("1",0.300)==true)
-     {
-       opticsChannel1 = optGetMeasureMean();
-       ArrOpticsCh1BaseLine[TecNum] += opticsChannel1;
-       Debug("TEC1"+(TecNum)+" Channel 1 Optics Measurement " + opticsChannel1);
-       filename = "VolpiOutputTEC"+(TecNum + 1)+"Ch1.txt";
-       outAppendToOutputFile(filename,opticsChannel1+",");
-       if(optMeasure("3",0.300)==true)
-       {
-         opticsChannel3 = optGetMeasureMean();
-         ArrOpticsCh3BaseLine[TecNum] += opticsChannel3;
-         Debug("TEC1"+(TecNum)+" Channel 3 Optics Measurement " + opticsChannel3);
-         filename = "VolpiOutputTEC"+(TecNum+1)+"Ch3.txt";
-         outAppendToOutputFile(filename,opticsChannel3+",");
-       }else{
-         Debug("Optical Measurement returned FALSE (CH3)-retry...");
-         if(optMeasure("3",0.300)==true)
-         {
-           opticsChannel3 = optGetMeasureMean();
-           ArrOpticsCh3BaseLine[TecNum] += opticsChannel3;
-           Debug("TEC1"+(TecNum)+" Channel 3 Optics Measurement " + opticsChannel3);
-           filename = "VolpiOutputTEC"+(TecNum+1)+"Ch3.txt";
-           outAppendToOutputFile(filename,opticsChannel3+",");
-         }
-       }
-       //on the 5th cycle, compute average baseline
-       if(cycle == 5)
-       {
-         ArrOpticsCh1BaseLine[TecNum] = ArrOpticsCh1BaseLine[TecNum]/5;
-         ArrOpticsCh3BaseLine[TecNum] = ArrOpticsCh3BaseLine[TecNum]/5;
-         Debug("TEC1"+(TecNum)+" Average Baseline CH1 " + ArrOpticsCh1BaseLine[TecNum]);
-         Debug("TEC1"+(TecNum)+" Average BaseLine CH3 " + ArrOpticsCh3BaseLine[TecNum]);
-       }
-     }else{
-       Debug("Optical Measurement returned FALSE (CH1)-retry...");
-       if(optMeasure("1",0.300)==true)
-       {
-         opticsChannel1 = optGetMeasureMean();
-         ArrOpticsCh1BaseLine[TecNum] += opticsChannel1;
-         Debug("TEC1"+(TecNum)+" Channel 1 Optics Measurement " + opticsChannel1);
-         filename = "VolpiOutputTEC"+(TecNum + 1)+"Ch1.txt";
-         outAppendToOutputFile(filename,opticsChannel1+",");
-         if(optMeasure("3",0.300)==true)
-         {
-           opticsChannel3 = optGetMeasureMean();
-           ArrOpticsCh3BaseLine[TecNum] += opticsChannel3;
-           Debug("TEC1"+(TecNum)+" Channel 3 Optics Measurement " + opticsChannel3);
-           filename = "VolpiOutputTEC"+(TecNum+1)+"Ch3.txt";
-           outAppendToOutputFile(filename,opticsChannel3+",");
-         }else{
-           Debug("Optical Measurement returned FALSE (CH3)-retry...");
-           if(optMeasure("3",0.300)==true)
-           {
-             opticsChannel3 = optGetMeasureMean();
-             ArrOpticsCh3BaseLine[TecNum] += opticsChannel3;
-             Debug("TEC1"+(TecNum)+" Channel 3 Optics Measurement " + opticsChannel3);
-             filename = "VolpiOutputTEC"+(TecNum+1)+"Ch3.txt";
-             outAppendToOutputFile(filename,opticsChannel3+",");
-           }
-         }
-         //on the 5th cycle, compute average baseline
-         if(cycle == 5)
-         {
-           ArrOpticsCh1BaseLine[TecNum] = ArrOpticsCh1BaseLine[TecNum]/5;
-           ArrOpticsCh3BaseLine[TecNum] = ArrOpticsCh3BaseLine[TecNum]/5;
-           Debug("TEC1"+(TecNum)+" Average Baseline CH1 " + ArrOpticsCh1BaseLine[TecNum]);
-           Debug("TEC1"+(TecNum)+" Average BaseLine CH3 " + ArrOpticsCh3BaseLine[TecNum]);
-         }
-       }      
-     }
-     if(TecNum < 7)
-     {
-       //move to next well
-       rbtMoveYRelative(790,0);
-     }else{
-       rbtMoveBothAbsolute(8910,115,0);//back to well 10
-     }
-     //delay
-     tmrDelay(1000);   
-   }
-	// Lag TEC at Lo
-	TECLag( propCycTECLoLT );
-	}
+    // Get TEC to Low
+    OutputLabel.text = "Cycle: " + cycle + " of " + propCycTECCycles + " TEC10-17 to " + propCycTECLoSP;
+    TECtoTarget( propCycTECLoSP, propCycTECLoRR );
+    // Dwell TEC at low
+    OutputLabel.text = "Cycle: " + cycle + " of " + propCycTECCycles + " TEC10-17 dwell " + propCycTECLoDW;
+    TECDwell( propCycTECLoDW );
+    //cycle thru the enabled wells, taking optics readings...
+    for(TecNum = 0;TecNum<8;TecNum++)
+    {
+      //Check robot position
+      CheckRobotPosition(TecNum);
+      //Take an optics reading
+      if(optMeasure("1",0.300)==true)
+      {
+        opticsChannel1 = optGetMeasureMean();
+        ArrOpticsCh1BaseLine[TecNum] += opticsChannel1;
+        Debug("TEC1"+(TecNum)+" Channel 1 Optics Measurement " + opticsChannel1);
+        filename = "VolpiOutputTEC"+(TecNum + 1)+"Ch1.txt";
+        outAppendToOutputFile(filename,opticsChannel1+",");
+        if(optMeasure("3",0.300)==true)
+        {
+          opticsChannel3 = optGetMeasureMean();
+          ArrOpticsCh3BaseLine[TecNum] += opticsChannel3;
+          Debug("TEC1"+(TecNum)+" Channel 3 Optics Measurement " + opticsChannel3);
+          filename = "VolpiOutputTEC"+(TecNum+1)+"Ch3.txt";
+          outAppendToOutputFile(filename,opticsChannel3+",");
+        }else{
+          Debug("Optical Measurement returned FALSE (CH3)-retry...");
+          if(optMeasure("3",0.300)==true)
+          {
+            opticsChannel3 = optGetMeasureMean();
+            ArrOpticsCh3BaseLine[TecNum] += opticsChannel3;
+            Debug("TEC1"+(TecNum)+" Channel 3 Optics Measurement " + opticsChannel3);
+            filename = "VolpiOutputTEC"+(TecNum+1)+"Ch3.txt";
+            outAppendToOutputFile(filename,opticsChannel3+",");
+          }
+        }
+        //on the 5th cycle, compute average baseline
+        if(cycle == 5)
+        {
+          ArrOpticsCh1BaseLine[TecNum] = ArrOpticsCh1BaseLine[TecNum]/5;
+          ArrOpticsCh3BaseLine[TecNum] = ArrOpticsCh3BaseLine[TecNum]/5;
+          Debug("TEC1"+(TecNum)+" Average Baseline CH1 " + ArrOpticsCh1BaseLine[TecNum]);
+          Debug("TEC1"+(TecNum)+" Average BaseLine CH3 " + ArrOpticsCh3BaseLine[TecNum]);
+        }
+      }else{
+        Debug("Optical Measurement returned FALSE (CH1)-retry...");
+        if(optMeasure("1",0.300)==true)
+        {
+          opticsChannel1 = optGetMeasureMean();
+          ArrOpticsCh1BaseLine[TecNum] += opticsChannel1;
+          Debug("TEC1"+(TecNum)+" Channel 1 Optics Measurement " + opticsChannel1);
+          filename = "VolpiOutputTEC"+(TecNum + 1)+"Ch1.txt";
+          outAppendToOutputFile(filename,opticsChannel1+",");
+          if(optMeasure("3",0.300)==true)
+          {
+            opticsChannel3 = optGetMeasureMean();
+            ArrOpticsCh3BaseLine[TecNum] += opticsChannel3;
+            Debug("TEC1"+(TecNum)+" Channel 3 Optics Measurement " + opticsChannel3);
+            filename = "VolpiOutputTEC"+(TecNum+1)+"Ch3.txt";
+            outAppendToOutputFile(filename,opticsChannel3+",");
+          }else{
+            Debug("Optical Measurement returned FALSE (CH3)-retry...");
+            if(optMeasure("3",0.300)==true)
+            {
+              opticsChannel3 = optGetMeasureMean();
+              ArrOpticsCh3BaseLine[TecNum] += opticsChannel3;
+              Debug("TEC1"+(TecNum)+" Channel 3 Optics Measurement " + opticsChannel3);
+              filename = "VolpiOutputTEC"+(TecNum+1)+"Ch3.txt";
+              outAppendToOutputFile(filename,opticsChannel3+",");
+            }
+          }
+          //on the 5th cycle, compute average baseline
+          if(cycle == 5)
+          {
+            ArrOpticsCh1BaseLine[TecNum] = ArrOpticsCh1BaseLine[TecNum]/5;
+            ArrOpticsCh3BaseLine[TecNum] = ArrOpticsCh3BaseLine[TecNum]/5;
+            Debug("TEC1"+(TecNum)+" Average Baseline CH1 " + ArrOpticsCh1BaseLine[TecNum]);
+            Debug("TEC1"+(TecNum)+" Average BaseLine CH3 " + ArrOpticsCh3BaseLine[TecNum]);
+          }
+        }      
+      }
+      if(TecNum < 7)
+      {
+        //move to next well
+        rbtMoveYRelative(790,0);
+      }else{
+        rbtMoveBothAbsolute(8910,115,0);//back to well 10
+      }
+      //delay
+      tmrDelay(1000);   
+    } 
+    // Lag TEC at Lo
+    TECLag( propCycTECLoLT );
+  }
 }
 finally
 {
-	// When done turn off the TEC
-	tecEnable( "TEC10", false );
+  // When done turn off the TEC
+  tecEnable( "TEC10", false );
   tecEnable( "TEC11", false );
   tecEnable( "TEC12", false );
   tecEnable( "TEC13", false );
-	tecEnable( "TEC14", false );
+  tecEnable( "TEC14", false );
   tecEnable( "TEC15", false );
   tecEnable( "TEC16", false );
   tecEnable( "TEC17", false );
   //Home the robot
   rbtHomeBoth(0);
-	OutputLabel.text = MacroName + " - Complete";
+  OutputLabel.text = MacroName + " - Complete";
 }
 
 function CheckRobotPosition(index)
@@ -199,7 +202,7 @@ function CheckRobotPosition(index)
 
 function TECtoTarget( target, ramprate )
 {
-	Debug( "TEC10-17 to " + target + " @ " + ramprate );
+  Debug( "TEC10-17 to " + target + " @ " + ramprate );
 
   tecSetPoint( "TEC10", target, ramprate );
   tecSetPoint( "TEC11", target, ramprate );
@@ -218,48 +221,48 @@ function TECtoTarget( target, ramprate )
   tecEnable( "TEC15", true );
   tecEnable( "TEC16", true );
   tecEnable( "TEC17", true );	
-	templo = target-2;
-	temphi = target+2;
-	temp = -900;
-	while( (temp<=templo) || (temp>=temphi) )
-	{
-	  temp = tecReadTemperature( "TEC10" );
+  templo = target-2;
+  temphi = target+2;
+  temp = -900;
+  while( (temp<=templo) || (temp>=temphi) )
+  {
+    temp = tecReadTemperature( "TEC10" );
     ThermoCouple1 = mccReadTemperature("0",0,0);
     outAppendToOutputFile("ThermoCouple1.txt",ThermoCouple1+",");
-		tmrDelay(500);//was 250
-	}
+    tmrDelay(500);//was 250
+  }
 }
 
 function TECLag( lagtime )
 {
-	Debug( "TEC10-17 lag for " + lagtime + " seconds" );
+  Debug( "TEC10-17 lag for " + lagtime + " seconds" );
 
-	acctime = 0;
-	chktime = lagtime * 1000;
-	while( acctime<chktime )
-	{
-		tmrDelay(100);
-		acctime += 100;
-	}
+  acctime = 0;
+  chktime = lagtime * 1000;
+  while( acctime<chktime )
+  {
+    tmrDelay(100);
+    acctime += 100;
+  }
 }
 
 function TECDwell( dwelltime )
 {
-	Debug( "TEC10-17 dwell for " + dwelltime + " seconds" );
+  Debug( "TEC10-17 dwell for " + dwelltime + " seconds" );
 
-	acctime = 0;
-	chktime = dwelltime * 1000;
-	while( acctime<chktime )
-	{
+  acctime = 0;
+  chktime = dwelltime * 1000;
+  while( acctime<chktime )
+  {
     ThermoCouple1 = mccReadTemperature("0",0,0);
     outAppendToOutputFile("ThermoCouple1.txt",ThermoCouple1+",");
-		tmrDelay(500);//was 250
-		acctime += 500;
-	}
+    tmrDelay(500);//was 250
+    acctime += 500;
+  }
 }
 
 function Debug( str )
 {
-	if( DebugOutput )
-		outPrintToConsole( MacroName + " " + str );
+  if( DebugOutput )
+    outPrintToConsole( MacroName + " " + str );
 }
