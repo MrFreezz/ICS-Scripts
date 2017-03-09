@@ -140,17 +140,17 @@ try
 	  {	  
 	    Debug("TEC1"+TecNum+" is complete!");
 	    ArrTECisOn[TecNum]=0;
-      // determine if experiment complete...
-      tecsOn = 0;
-      for(i=0;i<8;i++)
-      {
-        tecsOn += ArrTECisOn[i];
-      }
-      if(tecsOn == 0)
-      {
-        Debug("Experiment Complete!");
-        break;
-      }
+            // determine if experiment complete...
+            tecsOn = 0;
+            for(i=0;i<8;i++)
+            {
+              tecsOn += ArrTECisOn[i];
+            }
+            if(tecsOn == 0)
+            {
+              Debug("Experiment Complete!");
+              break;
+            }
 	  }
         }
       }//End if(ArrTECisOn[TecNum]==1)
