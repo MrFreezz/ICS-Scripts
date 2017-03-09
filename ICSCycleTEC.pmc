@@ -11,7 +11,9 @@ MacroName = "qPCR8Well";
 // 1.01 - rrm add support for 8 well PCR with retries on optics reads
 // 1.02 - rrm add check for robot position
 // 2.00 - rrm add "end of reaction" detection intelligence
-MacroVersion = "1.02";
+// 2.01 - rrm fix bug when all tecs are disabled so script can finish
+//        add user input dialog
+MacroVersion = "2.01";
 
 // Include show properties
 #include <c:\\ICSMacros\\ICSShowProps.pmc>
@@ -29,6 +31,12 @@ ShowProperties();
 
 try
 {
+  userInput = inpGetStringInput( "qPCR For 8 Wells", "Begin Experiment?","yes" );
+  if( userInput.toUpperCase()=="YES" )
+	  continueToRun = true;
+  else
+	  continueToRun = false;
+
   OutputLabel.text = MacroName + " - TEC10-17" + propCycTECCycles + " from: " + propCycTECLoSP + " to: " + propCycTECHiSP;
   //Delete any output files if they exist
   outDeleteOutputFile("VolpiOutputTEC1Ch1.txt");
@@ -132,6 +140,17 @@ try
 	  {	  
 	    Debug("TEC1"+TecNum+" is complete!");
 	    ArrTECisOn[TecNum]=0;
+      // determine if experiment complete...
+      tecsOn = 0;
+      for(i=0;i<8;i++)
+      {
+        tecsOn += ArrTECisOn[i];
+      }
+      if(tecsOn == 0)
+      {
+        Debug("Experiment Complete!");
+        break;
+      }
 	  }
         }
       }//End if(ArrTECisOn[TecNum]==1)
@@ -183,6 +202,8 @@ function CheckRobotPosition(index)
 
 function TECtoTarget( target, ramprate )
 {
+  //init lastTECname
+  lastTECname = "";
   //configure target set-point and ramprate
   tecSetPoint( "TEC10", target, ramprate );
   tecSetPoint( "TEC11", target, ramprate );
