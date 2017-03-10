@@ -33,9 +33,9 @@ try
 {
   userInput = inpGetStringInput( "qPCR For 8 Wells", "Begin Experiment?","yes" );
   if( userInput.toUpperCase()=="YES" )
-	  continueToRun = true;
+    continueToRun = true;
   else
-	  continueToRun = false;
+    continueToRun = false;
 
   OutputLabel.text = MacroName + " - TEC10-17" + propCycTECCycles + " from: " + propCycTECLoSP + " to: " + propCycTECHiSP;
   //Delete any output files if they exist
@@ -61,18 +61,18 @@ try
   var ArrOpticsCh3BaseLine = new Array(0,0,0,0,0,0,0,0);
   //create array of booleans to determine if TEC is on or off
   var ArrTECisOn = new Array(1,1,1,1,1,1,1,1);
-  
+
   // Move Robot to first well
   rbtMoveBothAbsolute(8910,115,0);
   //Enzyme Activation
   TECtoTarget(propCycTECHiSP, propCycTECHiRR);
   //Hold for 3 minutes
-  TECDwell(180);  
+  TECDwell(180);
   // Run the cycles
   for( cycle=1; cycle<=propCycTECCycles; cycle++ )
   {
     Debug( "TEC10-17 cycle " + cycle + " of " + propCycTECCycles );
-	
+
     // Get TEC to Hi
     OutputLabel.text = "Cycle: " + cycle + " of " + propCycTECCycles + " TEC10-17 to " + propCycTECHiSP;
     TECtoTarget( propCycTECHiSP, propCycTECHiRR );
@@ -101,7 +101,7 @@ try
         opticsChannel1 = optGetMeasureMean();
         if(cycle < 6)
         {
-	  //sum for calculating average baseline
+          //sum for calculating average baseline
           ArrOpticsCh1BaseLine[TecNum] += opticsChannel1;
         }
         Debug("TEC1"+(TecNum)+" Channel 1 Optics Measurement " + opticsChannel1);
@@ -113,7 +113,7 @@ try
         opticsChannel3 = optGetMeasureMean();
         if(cycle < 6)
         {
-	  //sum for calculating average baseline
+          //sum for calculating average baseline
           ArrOpticsCh3BaseLine[TecNum] += opticsChannel3;
         }
         Debug("TEC1"+(TecNum)+" Channel 3 Optics Measurement " + opticsChannel3);
@@ -130,16 +130,16 @@ try
         if(cycle > 5)
         {
           //check for completion of this well
-    	  //first calculate normalized base line for this well
-	  NormalizedBaseline = ArrOpticsCh1BaseLine[TecNum]/ArrOpticsCh3BaseLine[TecNum];
-	  //next calculate the normalized datapoint for this well
-	  NormalizedReading = opticsChannel1/opticsChannel3;
-	  //if the normalized reading is > than 2x the normalized baseline then we are done...
-	  Debug("Normalized Baseline = "+NormalizedBaseline+" Normalized Reading = "+NormalizedReading);
-	  if(NormalizedReading > (2*NormalizedBaseline))
-	  {	  
-	    Debug("TEC1"+TecNum+" is complete!");
-	    ArrTECisOn[TecNum]=0;
+    	    //first calculate normalized base line for this well
+          NormalizedBaseline = ArrOpticsCh1BaseLine[TecNum]/ArrOpticsCh3BaseLine[TecNum];
+          //next calculate the normalized datapoint for this well
+          NormalizedReading = opticsChannel1/opticsChannel3;
+          //if the normalized reading is > than 2x the normalized baseline then we are done...
+          Debug("Normalized Baseline = "+NormalizedBaseline+" Normalized Reading = "+NormalizedReading);
+          if(NormalizedReading > (2*NormalizedBaseline))
+          {
+            Debug("TEC1"+TecNum+" is complete!");
+            ArrTECisOn[TecNum]=0;
             // determine if experiment complete...
             tecsOn = 0;
             for(i=0;i<8;i++)
@@ -151,7 +151,7 @@ try
               Debug("Experiment Complete!");
               break;
             }
-	  }
+          }
         }
       }//End if(ArrTECisOn[TecNum]==1)
       if(TecNum < 7)
@@ -162,8 +162,8 @@ try
         rbtMoveBothAbsolute(8910,115,0);//back to well 10
       }
       //delay
-      tmrDelay(1000);   
-    } 
+      tmrDelay(1000);
+    }
     // Lag TEC at Lo
     TECLag( propCycTECLoLT );
   }
@@ -196,7 +196,7 @@ function CheckRobotPosition(index)
   {
     Debug("ERROR! - Robot @ position " + currentYpos);
     rbtMoveBothAbsolute(8910,correctYpos,0);
-    tmrDelay(1000); 
+    tmrDelay(1000);
   }
 }
 
@@ -225,7 +225,7 @@ function TECtoTarget( target, ramprate )
       Debug( "Disabling "+tecName);
       tecEnable(tecName,false);
     }
-  }	
+  }
   templo = target-2;
   temphi = target+2;
   temp = -900;
