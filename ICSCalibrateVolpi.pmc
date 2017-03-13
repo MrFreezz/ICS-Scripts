@@ -1,0 +1,123 @@
+
+//
+// ICS process macro
+//
+
+// Assign macro name
+MacroName = "ICSCalibrateVolpi";
+
+// Assign version
+// 1.00 - RRM initial version
+//
+MacroVersion = "1.00";
+
+// Enable debug output
+DebugOutput = true;
+// set the process bay
+propProcessBay = 1;
+// Announce who we are
+Debug( "***************************************************************" );
+Debug( "V" + MacroVersion );
+
+try
+{
+
+
+  //Create and init variables
+  var ArrVolpiYPosition = new Array(115,905,1695,2485,3275,4065,4855,5645);
+  var ArrOpticsCh3Val = new Array(0,0,0,0,0,0,0,0);
+  var TecNum = 0;
+  var DummyNum = 0;
+  var JogYPos = 0;
+  var Sign = 1;//either +1 or -1
+  var NewPosition = 0;
+  var Done = 0;
+
+  userInput = inpGetStringInput( "Calibrate Volpi Detector Position", "Begin Experiment?","0" );
+  TecNum = Number(userInput);
+  Debug("TecNum = "+TecNum);
+
+  Debug("Moving Robot");
+  // Move Robot to first well
+  rbtMoveBothAbsolute(8910,ArrVolpiYPosition[TecNum],0);
+  tmrDelay(10000);//wait for robot to get to first well...
+  Debug("Begin Calibration");
+  while(!Done)
+  {
+    //Check robot position
+    CheckRobotPosition(ArrVolpiYPosition[TecNum] + (JogYPos * Sign));
+
+    //Take an optics reading for channel 3
+    MeasureOpticsChannel("3");
+    //get the value for this channel
+    opticsChannel3 = optGetMeasureMean();
+
+    //compare with current optics maximum for this TEC well
+    if(opticsChannel3 > ArrOpticsCh3Val[TecNum])
+    {
+      ArrOpticsCh3Val[TecNum] = opticsChannel3;//update max value
+      ArrVolpiYPosition[TecNum] += (JogYPos * Sign);//update new position
+
+      Debug("Max CH3 Value Update to "+ opticsChannel3 + " @ "+ ArrVolpiYPosition[TecNum]);
+      //Jog over a bit
+      JogYPos = 10;
+      NewPosition += JogYPos * Sign;
+      rbtMoveBothAbsolute(8910,ArrVolpiYPosition[TecNum]+(JogYPos * Sign),0);
+      tmrDelay(2000);
+    }
+    else
+    {
+      //is the jog value already negative? OR is NewPosition > 10
+      if((Sign < 0)||(NewPosition > 10))
+      {
+        Done = 1;
+      }
+      else
+      {
+        Sign *= -1;//make Sign value negative
+        //Jog over a bit the other way
+        NewPosition -= JogYPos;
+        rbtMoveBothAbsolute(8910,ArrVolpiYPosition[TecNum]-JogYPos,0);
+        tmrDelay(2000);
+      }
+    }
+  }
+  Debug("Ideal position = " + ArrVolpiYPosition[TecNum] + " with max Signal = "+ArrOpticsCh3Val[TecNum]);
+}
+finally
+{
+  //Home the robot
+  rbtHomeBoth(0);
+  Debug(" - Complete!");
+}
+
+function CheckRobotPosition(position)
+{
+  currentYpos = rbtGetYPosition();
+
+  if(currentYpos == position)
+  {
+    Debug("Robot @ Correct position");
+  }
+  else
+  {
+    Debug("ERROR! - Robot @ position " + currentYpos);
+    rbtMoveBothAbsolute(8910,position,0);
+    tmrDelay(1000);
+  }
+}
+
+function MeasureOpticsChannel(ChanName)
+{
+  while(optMeasure(ChanName,0.300)!=true)
+  {
+    Debug("optMeasure returned false on CH"+ChanName);
+    tmrDelay(300);
+  }
+}
+
+function Debug( str )
+{
+  if( DebugOutput )
+    outPrintToConsole( MacroName + " " + str );
+}
