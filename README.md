@@ -10,6 +10,9 @@ repository for scripts used with the Phase3 ICS software
 //        add user input dialog
 // 2.02 - rrm change robot movements to absolute motion based on calibrated
 //        well locations
+// 2.03 - rrm add user input dialog to switch between running full # of cycles
+//        vs intelligent completion.
+//        add user input dialog to allow arbitrary threshold number
 
 //ICSCalibrateVolpi script history
 // 1.00 - RRM initial version
