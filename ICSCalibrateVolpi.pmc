@@ -8,8 +8,9 @@ MacroName = "ICSCalibrateVolpi";
 
 // Assign version
 // 1.00 - RRM initial version
+// 1.01 - Take 3 optical readings and calculate average
 //
-MacroVersion = "1.00";
+MacroVersion = "1.01";
 
 // Enable debug output
 DebugOutput = true;
@@ -46,12 +47,16 @@ try
   {
     //Check robot position
     CheckRobotPosition(ArrVolpiYPosition[TecNum] + (JogYPos * Sign));
-
-    //Take an optics reading for channel 3
-    MeasureOpticsChannel("3");
-    //get the value for this channel
-    opticsChannel3 = optGetMeasureMean();
-
+    opticsChannel3 = 0;//init
+    for(i=0;i<3;i++)
+    {
+      //Take an optics reading for channel 3
+      MeasureOpticsChannel("3");
+      //get the value for this channel
+      opticsChannel3 += optGetMeasureMean();
+      tmrDelay(100);
+    }
+    opticsChannel3 = opticsChannel3/3;//take average
     //compare with current optics maximum for this TEC well
     if(opticsChannel3 > ArrOpticsCh3Val[TecNum])
     {
@@ -74,6 +79,7 @@ try
       }
       else
       {
+        Debug("Switch Direction");
         Sign *= -1;//make Sign value negative
         //Jog over a bit the other way
         NewPosition -= JogYPos;
