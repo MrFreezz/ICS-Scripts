@@ -18,7 +18,10 @@ MacroName = "qPCR8Well";
 // 2.03 - rrm add user input dialog to switch between running full # of cycles
 //        vs intelligent completion.
 //        add user input dialog to allow arbitrary threshold number
-MacroVersion = "2.03";
+// 2.04 - rrm Add user dialog to enter # of cycles to calculate baseline
+//        fix null tec bug
+
+MacroVersion = "2.04";
 
 // Include show properties
 #include <c:\\ICSMacros\\ICSShowProps.pmc>
@@ -36,6 +39,7 @@ ShowProperties();
 
 try
 {
+  //ask user if they wish to run experiment with intelligent shut off threshold or run all cycles
   userInput = inpGetStringInput( "qPCR For 8 Wells", "Begin Experiment and Complete All Cycles?","yes" );
   if( userInput.toUpperCase()=="YES" )
     continueToRun = true;
@@ -44,6 +48,7 @@ try
 
   if(continueToRun == false)
   {
+    //if running intelligent shut off..ask user to input threshold
     userInput = inpGetStringInput( "Completion Threshold", "Threshold To Use?","2.0" );
     Threshold = Number(userInput);
     Debug("Threshold Set to: "+Threshold);
@@ -52,6 +57,10 @@ try
   {
     Threshold = 1.0;
   }
+  //user input the # of cycles to calculate baseline
+  userInput = inpGetStringInput( "# Cycles to Compute Baseline", "Cycles To Use?","5" );
+  BaseLineCycles = Number(userInput);
+  Debug("Baseline # Cycles to average Set to: "+BaseLineCycles);
 
   OutputLabel.text = MacroName + " - TEC10-17" + propCycTECCycles + " from: " + propCycTECLoSP + " to: " + propCycTECHiSP;
   //Delete any output files if they exist
@@ -117,7 +126,7 @@ try
         MeasureOpticsChannel("1");
         //get the value for this channel
         opticsChannel1 = optGetMeasureMean();
-        if(cycle < 6)
+        if(cycle < (BaseLineCycles + 1))
         {
           //sum for calculating average baseline
           ArrOpticsCh1BaseLine[TecNum] += opticsChannel1;
@@ -129,7 +138,7 @@ try
         MeasureOpticsChannel("3");
         //get the value for this channel
         opticsChannel3 = optGetMeasureMean();
-        if(cycle < 6)
+        if(cycle < (BaseLineCycles + 1))
         {
           //sum for calculating average baseline
           ArrOpticsCh3BaseLine[TecNum] += opticsChannel3;
@@ -138,14 +147,14 @@ try
         filename = "VolpiOutputTEC"+(TecNum+1)+"Ch3.txt";
         outAppendToOutputFile(filename,opticsChannel3+",");
         //on the 5th cycle, compute average baseline
-        if(cycle == 5)
+        if(cycle == BaseLineCycles)
         {
-          ArrOpticsCh1BaseLine[TecNum] = ArrOpticsCh1BaseLine[TecNum]/5;
-          ArrOpticsCh3BaseLine[TecNum] = ArrOpticsCh3BaseLine[TecNum]/5;
+          ArrOpticsCh1BaseLine[TecNum] = ArrOpticsCh1BaseLine[TecNum]/BaseLineCycles;
+          ArrOpticsCh3BaseLine[TecNum] = ArrOpticsCh3BaseLine[TecNum]/BaseLineCycles;
           Debug("TEC1"+(TecNum)+" Average Baseline CH1 " + ArrOpticsCh1BaseLine[TecNum]);
           Debug("TEC1"+(TecNum)+" Average BaseLine CH3 " + ArrOpticsCh3BaseLine[TecNum]);
         }
-        if(cycle > 5)
+        if(cycle > BaseLineCycles)
         {
           if(continueToRun == false)
           {
@@ -251,7 +260,7 @@ function TECtoTarget( target, ramprate )
   templo = target-2;
   temphi = target+2;
   temp = -900;
-  while( (temp<=templo) || (temp>=temphi) )
+  while( (temp<=templo) || (temp>=temphi) && (lastTECname != "") )
   {
     temp = tecReadTemperature( lastTECname );
     ThermoCouple1 = mccReadTemperature("0",0,0);

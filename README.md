@@ -13,6 +13,8 @@ repository for scripts used with the Phase3 ICS software
 // 2.03 - rrm add user input dialog to switch between running full # of cycles
 //        vs intelligent completion.
 //        add user input dialog to allow arbitrary threshold number
+// 2.04 - rrm Add user dialog to enter # of cycles to calculate baseline
+//        fix null tec bug
 
 //ICSCalibrateVolpi script history
 // 1.00 - RRM initial version
