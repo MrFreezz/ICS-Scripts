@@ -15,6 +15,8 @@ repository for scripts used with the Phase3 ICS software
 //        add user input dialog to allow arbitrary threshold number
 // 2.04 - rrm Add user dialog to enter # of cycles to calculate baseline
 //        fix null tec bug
+// 2.05 - rrm Add 3 minute 72 degree hold feature when thermo-cycling complete
+//        REALLY fix the null tec bug
 
 //ICSCalibrateVolpi script history
 // 1.00 - RRM initial version
